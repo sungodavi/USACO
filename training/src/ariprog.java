@@ -6,22 +6,23 @@ TASK: ariprog
 import java.util.*;
 import java.io.*;
 
-class Point implements Comparable<Point>
-{
-	int x,y;
-	public Point(int a, int b)
-	{
-		x = a; y = b;
-	}
-	
-	public int compareTo(Point p)
-	{
-		return y - p.y;
-	}
-}
+
 	
 class ariprog
 {
+	static class Point implements Comparable<Point>
+	{
+		int x,y;
+		public Point(int a, int b)
+		{
+			x = a; y = b;
+		}
+		
+		public int compareTo(Point p)
+		{
+			return y - p.y;
+		}
+	}
 	public static ArrayList<Point> list = new ArrayList<Point>();
 	public static void load(boolean[] set, int depth, int max)
 	{
