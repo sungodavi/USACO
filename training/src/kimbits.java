@@ -11,21 +11,9 @@ public class kimbits
 {
 	public static String findN(int size, int num, long index)
 	{
-		long max = ((long)1 << num) - 1;
-		System.out.println(max);
-		if(index <= max)
-			return convert(index - 1, size);
-		
-		int count = 0;
-		while(max < index)
-		{
-			count++;
-			max <<= 1;
-		}
 		int[] a = new int[num];
 		for(int i = 0; i < a.length; i++)
-			a[i] = i + count - 1;
-		index -= max >> 1;
+			a[i] = -1;
 		System.out.println(index);
 		for(; index > 1; index--)
 		{
@@ -46,7 +34,7 @@ public class kimbits
 			{
 				a[a.length - 1]++;
 			}
-			//System.out.println(Arrays.toString(a) + convert(a, 5));
+			System.out.println(index + " " + Arrays.toString(a) + convert(a, size));
 		}
 		return convert(a, size);
 	}
@@ -79,7 +67,7 @@ public class kimbits
 		int size = Integer.parseInt(st.nextToken());
 		int num = Integer.parseInt(st.nextToken());
 		long index = Long.parseLong(st.nextToken());
-		out.println(findN(size, num, index));
+		System.out.println(findN(size, num, index));
 		out.close();
 	}
 }

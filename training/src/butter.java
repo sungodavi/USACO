@@ -6,60 +6,63 @@ TASK: butter
 
 import java.util.*;
 import java.io.*;
+import java.awt.Point;
 
 public class butter 
 {
-	public static int[] floydWarshall(int[][] a, HashMap<Integer, Integer> cows)
+	public static int dijkstras(int[][] a, int source, HashMap<Integer, Integer> cows)
 	{
-		int[][] dist = new int[a.length][a.length];
-		int[] minPaths = new int[a.length];
-		for(int r = 0; r < a.length; r++)
+		int cowsLeft = cows.size();
+		PriorityQueue<Point> q = new PriorityQueue<Point>(new Comparator<Point>()
+				{
+			public int compare(Point x, Point y)
+			{
+				return x.y - y.y;
+			}
+				});
+		int[] dist = new int[a.length];
+		int sumDist = 0;
+		Arrays.fill(dist, Integer.MAX_VALUE);
+		dist[source] = 0;
+		q.add(new Point(source, 0));
+		boolean[] visited = new boolean[a.length];
+		while(!q.isEmpty() && cowsLeft > 0)
+		{
+			Point p = q.remove();
+			int r = p.x;
+			if(visited[r])
+				continue;
+			visited[r] = true;
+			if(cows.containsKey(r))
+			{
+				cowsLeft--;
+				sumDist += cows.get(r) * dist[r];
+			}
 			for(int c = 0; c < a.length; c++)
 			{
-				if(a[r][c] > 0)
-					dist[r][c] = a[r][c];
-				else if(r != c)
-					dist[r][c] = Integer.MAX_VALUE;
-			}
-		
-				
-		for(int k = 0; k < a.length; k++)
-		{
-			for(int r = 0; r < a.length - 1; r++)
-			{
-				for(int c = r + 1; c < a.length; c++)
+				if(a[r][c] > 0 && !visited[c])
 				{
-					if(dist[r][k] == Integer.MAX_VALUE || dist[k][c] == Integer.MAX_VALUE)
-						continue;
-					
-					int newPath = dist[Integer.min(r, k)][Integer.max(r, k)] + 
-							dist[Integer.min(c, k)][Integer.max(c, k)];
-					
-					if(newPath < dist[r][c])
-						dist[c][r] = dist[r][c] = newPath;
-					
-					if(k == a.length - 1)
-					{
-						if(cows.containsKey(r))
-							minPaths[c] += cows.get(r) * dist[r][c];
-						if(cows.containsKey(c))
-							minPaths[r] += cows.get(c) * dist[r][c];
-					}
+					int newDist = a[r][c] + dist[r];
+					if(dist[c] > newDist)
+						dist[c] = newDist;
+					q.add(new Point(c, dist[c]));
 				}
 			}
 		}
-		return minPaths;
+		return sumDist;		
 	}
+	
 	public static int minPath(int[][] a, HashMap<Integer, Integer> cows)
 	{
-		int[] paths = floydWarshall(a, cows);
-		//System.out.println(Arrays.toString(paths));
-		int min = paths[0];
-		for(int i = 0; i < a.length; i++)
-			if(paths[i] < min)
-				min = paths[i];
-		return min;
+		PriorityQueue<Integer> q = new PriorityQueue<Integer>();
+		for(int r = 0; r < a.length; r++)
+			q.add(dijkstras(a, r, cows));
+		return q.remove();
 	}
+	/**
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		BufferedReader f = new BufferedReader(new FileReader("butter.in"));
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
