@@ -10,9 +10,8 @@ import java.awt.Point;
 
 public class butter 
 {
-	public static int dijkstras(int[][] a, int source, HashMap<Integer, Integer> cows)
+	public static int dijkstras(HashMap<Integer, ArrayList<Point>> map, int size, int source, int[] cows)
 	{
-		int cowsLeft = cows.size();
 		PriorityQueue<Point> q = new PriorityQueue<Point>(new Comparator<Point>()
 				{
 			public int compare(Point x, Point y)
@@ -20,44 +19,46 @@ public class butter
 				return x.y - y.y;
 			}
 				});
-		int[] dist = new int[a.length];
+		int[] dist = new int[size + 1];
+		boolean[] visited = new boolean[size + 1];
 		int sumDist = 0;
 		Arrays.fill(dist, Integer.MAX_VALUE);
 		dist[source] = 0;
 		q.add(new Point(source, 0));
-		boolean[] visited = new boolean[a.length];
-		while(!q.isEmpty() && cowsLeft > 0)
+		//System.out.println(cows);
+		while(!q.isEmpty())
 		{
 			Point p = q.remove();
 			int r = p.x;
 			if(visited[r])
 				continue;
 			visited[r] = true;
-			if(cows.containsKey(r))
+			//System.out.println(p);
+			for(Point edge : map.get(r))
 			{
-				cowsLeft--;
-				sumDist += cows.get(r) * dist[r];
-			}
-			for(int c = 0; c < a.length; c++)
-			{
-				if(a[r][c] > 0 && !visited[c])
+				if(!visited[edge.x])
 				{
-					int newDist = a[r][c] + dist[r];
-					if(dist[c] > newDist)
-						dist[c] = newDist;
-					q.add(new Point(c, dist[c]));
+					int newDist = edge.y + dist[r];
+					if(dist[edge.x] > newDist)
+						dist[edge.x] = newDist;
+					q.add(new Point(edge.x, dist[edge.x]));
 				}
 			}
 		}
+		for(int cow : cows)
+			sumDist += dist[cow];
 		return sumDist;		
 	}
 	
-	public static int minPath(int[][] a, HashMap<Integer, Integer> cows)
+	public static int minPath(HashMap<Integer, ArrayList<Point>> map, int size, int[] cows)
 	{
-		PriorityQueue<Integer> q = new PriorityQueue<Integer>();
-		for(int r = 0; r < a.length; r++)
-			q.add(dijkstras(a, r, cows));
-		return q.remove();
+		int max = Integer.MAX_VALUE;
+		for(int r = 1; r <= size; r++)
+		{
+			//System.out.println(dijkstras(map, size, r, cows));
+			max = Integer.min(max, dijkstras(map, size, r, cows));
+		}
+		return max;
 	}
 	/**
 	 * @param args
@@ -68,32 +69,36 @@ public class butter
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
 				"butter.out")));
 		StringTokenizer st = new StringTokenizer(f.readLine());
-		int cows = Integer.parseInt(st.nextToken());
+		int[] cows = new int[Integer.parseInt(st.nextToken())];
 		int size = Integer.parseInt(st.nextToken());
 		int[][] a = new int[size][size];
+		HashMap<Integer, ArrayList<Point>> map = new HashMap<Integer, ArrayList<Point>>();
+		
 		int paths = Integer.parseInt(st.nextToken());
 		
 		HashMap<Integer, Integer> set = new HashMap<Integer, Integer>();
 		
-		for(int i = 0; i < cows; i++)
+		for(int i = 0; i < cows.length; i++)
 		{
-			int num = Integer.parseInt(f.readLine()) - 1;
-			if(set.containsKey(num))
-				set.put(num, set.get(num) + 1);
-			else
-				set.put(num, 1);
+			cows[i] = Integer.parseInt(f.readLine());
 		}
 		
 		//System.out.println(set);
 		for(int i = 0; i < paths; i++)
 		{
 			st = new StringTokenizer(f.readLine());
-			int r = Integer.parseInt(st.nextToken()) - 1;
-			int c = Integer.parseInt(st.nextToken()) - 1;
+			int r = Integer.parseInt(st.nextToken());
+			int c = Integer.parseInt(st.nextToken());
 			int d = Integer.parseInt(st.nextToken());
-			a[r][c] = a[c][r] = d;
+			if(!map.containsKey(r))
+				map.put(r, new ArrayList<Point>());
+			if(!map.containsKey(c))
+				map.put(c, new ArrayList<Point>());
+			map.get(r).add(new Point(c, d));
+			map.get(c).add(new Point(r, d));
 		}
-		out.println(minPath(a, set));
+		//System.out.println(map);
+		out.println(minPath(map, size, cows));
 		out.close();
 	}
 }

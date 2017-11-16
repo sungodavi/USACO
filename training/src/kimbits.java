@@ -9,65 +9,58 @@ import java.io.*;
 
 public class kimbits 
 {
-	public static String findN(int size, int num, long index)
-	{
-		int[] a = new int[num];
-		for(int i = 0; i < a.length; i++)
-			a[i] = -1;
-		System.out.println(index);
-		for(; index > 1; index--)
-		{
-			//System.out.println(index + " " + convert(a, size) + " " + Arrays.toString(a));
-			boolean found = false;
-			for(int j = 0; j < a.length - 1; j++)
-			{
-				if(a[j] + 1 < a[j+1])
-				{
-					a[j]++;
-					found = true;
-					break;
-				}
-				else
-					a[j] = -1;
-			}
-			if(!found)
-			{
-				a[a.length - 1]++;
-			}
-			System.out.println(index + " " + Arrays.toString(a) + convert(a, size));
-		}
-		return convert(a, size);
-	}
+	public static long index;
+	public static int size, bitCount;
+	static long[][] a;
 	
-	public static String convert(long n, int size)
+	public static void recurse(int n, int l, long i, PrintWriter out)
 	{
-		StringBuilder result = new StringBuilder(Long.toBinaryString(n));
-		while(result.length() < size)
-			result.insert(0, "0");
-		return result.toString();
-	}
-	
-	public static String convert(int[] a, int size)
-	{
-		char[] result = new char[size];
-		Arrays.fill(result, '0');
-		for(int i : a)
+		if(l > n)
+			l = n;
+		if(a[n][l] == i)
 		{
-			if(i >= 0)
-				result[result.length - 1 - i] = '1';
+			for(int k = 1; k <= l; k++)
+				out.print("1");
+			for(int k = 1; k <= n - l; k++)
+				out.print("0");
 		}
-		return new String(result);
+		else if(i > a[n - 1][l])
+		{
+			out.print("1");
+			recurse(n - 1, l - 1, i - a[n - 1][l], out);
+		}
+		else
+		{
+			out.print("0");
+			recurse(n - 1, l, i, out);
+		}
 	}
+
 	public static void main(String[] args) throws IOException {
 		BufferedReader f = new BufferedReader(new FileReader("kimbits.in"));
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
 				"kimbits.out")));
 		StringTokenizer st = new StringTokenizer(f.readLine());
 		
-		int size = Integer.parseInt(st.nextToken());
-		int num = Integer.parseInt(st.nextToken());
-		long index = Long.parseLong(st.nextToken());
-		System.out.println(findN(size, num, index));
+		size = Integer.parseInt(st.nextToken());
+		bitCount = Integer.parseInt(st.nextToken());
+		index = Long.parseLong(st.nextToken());
+		a = new long[size + 1][bitCount + 1];
+		Arrays.fill(a[0], 1);
+		for(int r = 1; r < a.length; r++)
+			a[r][0] = 1;
+		
+		for(int r = 1; r < a.length; r++)
+			for(int c = 1; c < a[0].length; c++)
+			{
+				if(c > r)
+					a[r][c] = a[r][r];
+				else
+					a[r][c] = a[r - 1][c - 1] + a[r-1][c];
+			}
+		
+		recurse(size, bitCount, index, out);
+		out.println();
 		out.close();
 	}
 }
