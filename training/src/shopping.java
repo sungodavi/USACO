@@ -10,7 +10,22 @@ import java.awt.Point;
 class shopping 
 {
 	static Deal[] deals;
-	static HashMap<Integer, Integer> prices;
+	static int[] curr, prices, map, amounts;
+	static int[][] memoTable;
+	static final int SIZE = 7777;
+	static class Bag
+	{
+		int[] curr;
+		public Bag(int[] a)
+		{
+			curr = a;
+		}
+		
+		public int hashCode()
+		{
+			return Arrays.hashCode(curr);
+		}
+	}
 	static class Deal
 	{
 		public int price;
@@ -21,62 +36,75 @@ class shopping
 			this.products = products;
 		}
 		
+		
 		public String toString()
 		{
 			return price + " " + Arrays.toString(products);
 		}
 	}
-	
-	public static boolean isValid(Deal d, HashMap<Integer, Integer> items)
+	public static int convert(int[] a)
+	{
+		int code = 0;
+		int e = 1;
+		for(int i = 0; i < a.length; i++)
+		{
+			code += a[i] * e;
+			e *= 6;
+		}
+		return code;
+	}
+	public static boolean canPurchase(Deal d)
 	{
 		for(Point product : d.products)
 		{
-			if(items.get(product.x) < product.y)
+			int index = map[product.x];
+			if(curr[index] + product.y > amounts[index])
 				return false;
 		}
 		return true;
 	}
-	public static void purchase(Deal d, HashMap<Integer, Integer> items)
+	public static void purchase(Deal d)
 	{
 		for(Point product : d.products)
 		{
-			items.put(product.x, items.get(product.x) - product.y);
+			int index = map[product.x];
+			curr[index] += product.y;
 		}
 	}
-	
-	public static void revert(Deal d, HashMap<Integer, Integer> items, int count)
+	public static void revert(Deal d, int count)
 	{
 		for(Point product : d.products)
 		{
-			items.put(product.x, items.get(product.x) + count * product.y);
+			int index = map[product.x];
+			curr[index] -= count * product.y;
 		}
 	}
-	public static int findCost(HashMap<Integer, Integer> itemsLeft, int index)
+	public static int findCost(int index)
 	{
-		//System.out.println(index + " " + itemsLeft);
 		if(index == deals.length)
 		{
-			
 			int cost = 0;
-			for(int item : itemsLeft.keySet())
+			for(int i = 0; i < curr.length; i++)
 			{
-				cost += prices.get(item) * itemsLeft.get(item);
+				cost += (amounts[i] - curr[i]) * prices[i];
 			}
-			//System.out.println(itemsLeft + " " + cost);
 			return cost;
 		}
+		int code = convert(curr);
+		if(memoTable[index][code] >= 0)
+			return memoTable[index][code];
 		int cost = Integer.MAX_VALUE;
 		Deal d = deals[index];
 		int count = 0;
-		while(isValid(d, itemsLeft))
+		while(canPurchase(d))
 		{
+			purchase(d);
 			count++;
-			purchase(d, itemsLeft);
-			cost = Integer.min(cost, d.price * count + findCost(itemsLeft, index + 1));
+			cost = Math.min(cost, findCost(index + 1) + count * d.price);
 		}
 		if(count > 0)
-			revert(d, itemsLeft, count);
-		return Integer.min(cost, findCost(itemsLeft, index + 1));
+			revert(d, count);
+		return memoTable[index][code] = Math.min(cost, findCost(index + 1));
 	}
 	public static void main(String[] args) throws IOException 
 	{
@@ -91,21 +119,25 @@ class shopping
 				a[k] = new Point(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
 			deals[i] = new Deal(a, Integer.parseInt(st.nextToken()));
 		}
-		prices = new HashMap<Integer, Integer>();
-		HashMap<Integer, Integer> items = new HashMap<Integer, Integer>();
-		for(int times = Integer.parseInt(f.readLine()); times > 0; times--)
+		int items = Integer.parseInt(f.readLine());
+		curr = new int[items];
+		amounts = new int[items];
+		prices = new int[items];
+		map = new int[1000];
+		memoTable = new int[deals.length][SIZE];
+		for(int[] temp : memoTable)
+			Arrays.fill(temp, -1);
+		for(int i = 0; i < items; i++)
 		{
 			StringTokenizer st = new StringTokenizer(f.readLine());
-			int id = Integer.parseInt(st.nextToken());
+			int key = Integer.parseInt(st.nextToken());
 			int amount = Integer.parseInt(st.nextToken());
 			int price = Integer.parseInt(st.nextToken());
-			prices.put(id, price);
-			items.put(id, amount);
+			amounts[i] = amount;
+			prices[i] = price;
+			map[key] = i;
 		}
-		//System.out.println(prices);
-		//System.out.println(items);
-		//System.out.println(Arrays.toString(deals));
-		int cost = findCost(items, 0);
+		int cost = findCost(0);
 		out.println(cost);
 		out.close();
 	}
