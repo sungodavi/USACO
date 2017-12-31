@@ -33,9 +33,8 @@ public class fence9
 		int sum = 0;
 		for(int i = 1; i < m; i++)
 		{
-			System.out.println(l2.getRight(i));
-			System.out.println(l1.getLeft(i));
-			sum += l2.getRight(i) - l1.getLeft(i) + 1;
+			System.out.println(l2.calc(i, true) + " " + l1.calc(i, false));
+			sum += l2.calc(i, false) - l1.calc(i, true);
 		}
 		return sum;
 	}
@@ -51,28 +50,13 @@ public class fence9
 			this.y1 = y1;
 		}
 		
-		public int getLeft(int y)
+		public int calc(int y, boolean left)
 		{
-			if(rise == 0)
-				return 0;
-			int n = (y - y1) * run;
-			int d = rise;
-			System.out.println(rise + " " + run + " " + n + " " + d);
-			//if(n % d == 0)
-				//return n / d + x1 + 1;
-			return n / d + x1 + 1;
-		}
-		
-		public int getRight(int y)
-		{
-			if(rise == 0)
-				return 0;
-			int n = (y - y1) * run;
-			int d = rise;
-			System.out.println(rise + " " + run + " " + n + " " + d);
-//			if(n % d == 0)
-//				return n / d + x1 - 1;
-			return n / d + x1 - 1;
+			int n = rise * x1 + (y - y1) * run;
+			if(n % rise == 0 && n != 0)
+				return n / rise + (left ? 0 : -1);
+			else
+				return n / rise;
 		}
 	}
 }
