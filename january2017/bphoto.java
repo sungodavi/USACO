@@ -1,109 +1,75 @@
-/*
-ID: sungoda1
-LANG: JAVA
-TASK: bphoto
- */
-
 import java.util.*;
 import java.io.*;
 
-import org.omg.CORBA.CTX_RESTRICT_SCOPE;
-
-public class bphoto 
-{
-	static int left, right, index;
+class bphoto {
 	public static void main(String[] args) throws IOException {
 		BufferedReader f = new BufferedReader(new FileReader("bphoto.in"));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
-				"bphoto.out")));
+		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("bphoto.out")));
+//		BufferedReader f = new BufferedReader(new InputStreamReader(System.in));
+//		PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+		
 		int size = Integer.parseInt(f.readLine());
-		int[] a = new int[size];
-		for(int i = 0; i < a.length; i++)
-			a[i] = Integer.parseInt(f.readLine());
-		Tree t = new Tree(a);
-		int count = 0;
-		for(int i = 0; i < a.length; i++)
+		Cow[] a = new Cow[size];
+		for(int i = 0; i < size; i++)
 		{
-			left = right = 0;
-			t.count(t.head, a[i], i);
-			if(left < right && left << 1 < right)
+			a[i] = new Cow(Integer.parseInt(f.readLine()), i);
+		}
+		Arrays.sort(a);
+		BIT tree = new BIT(size);
+		int seen = 0;
+		int count = 0;
+		for(Cow c : a)
+		{
+			int left = tree.get(c.index);
+			int right = seen - left;
+			if(Math.max(left, right) > (Math.min(left, right) << 1))
 				count++;
-			else if(right < left && right << 1 < left)
-				count++;
+			tree.update(c.index);
+			seen++;
 		}
 		out.println(count);
 		out.close();
 	}
 	
-	static class Tree
+	static class BIT
 	{
-		Node head;
-		public Tree(int[] a)
+		int[] a;
+		public BIT(int size)
 		{
-			head = new Node(a[0], 0);
-			for(int i = 1; i < a.length; i++)
-				add(head, a[i], i);
+			a = new int[size + 1];
 		}
 		
-		public void count(Node n, int val, int index)
+		public void update(int index)
 		{
-			if(n == null)
-				return;
-			if(n.val > val)
+			++index;
+			while(index < a.length)
 			{
-				if(n.index > index)
-					right++;
-				else
-					left++;
-				count(n.right, val, index);
-				count(n.left, val, index);
-			}
-			else if(n.max > val)
-				count(n.right, val, index);
-		}
-		public void add(Node n, int curr, int index)
-		{
-			if(curr > n.val)
-			{
-				if(curr > n.max)
-					n.max = curr;
-				if(n.right == null)
-					n.right = new Node(curr, index);
-				else
-					add(n.right, curr, index);
-			}
-			else
-			{
-				if(n.left == null)
-					n.left = new Node(curr, index);
-				else
-					add(n.left, curr, index);
+				++a[index];
+				index += index & -index;
 			}
 		}
-		public void display(Node n)
+		
+		public int get(int index)
 		{
-			if(n != null)
-			{
-				System.out.println(n);
-				display(n.left);
-				display(n.right);
-			}
+			int sum = 0;
+			for(; index > 0; index -= (index & -index))
+				sum += a[index];
+			return sum;
 		}
 	}
 	
-	static class Node
+	static class Cow implements Comparable<Cow>
 	{
-		int val, max, index;
-		Node left, right;
-		public Node(int val, int index)
+		int h, index;
+		public Cow(int h, int index)
 		{
-			this.val = val;
-			this.max = -1;
+			this.h = h;
 			this.index = index;
 		}
-		public String toString()
+		
+		public int compareTo(Cow c)
 		{
-			return val + " " + max;
+			return c.h - h;
 		}
 	}
 }
