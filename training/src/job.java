@@ -17,29 +17,57 @@ public class job
 		BufferedReader f = new BufferedReader(new FileReader("job.in"));
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("job.out")));
 		StringTokenizer st = new StringTokenizer(f.readLine());
-		
 		jobs = Integer.parseInt(st.nextToken());
-		int machineA = Integer.parseInt(st.nextToken());
-		int machineB = Integer.parseInt(st.nextToken());
+		a = new int[Integer.parseInt(st.nextToken())];
+		b = new int[Integer.parseInt(st.nextToken())];
+		int maxA = 1;
+		int maxB = 1;
+		
 		st = new StringTokenizer(f.readLine());
-		a = new int[machineA];
-		b = new int[machineB];
 		for(int i = 0; i < a.length; i++)
-			a[i] = Integer.parseInt(st.nextToken());
-		for(int i = 0; i < b.length; i++)
-			b[i] = Integer.parseInt(st.nextToken());
-		Arrays.sort(a);
+		{
+			if(!st.hasMoreTokens())
+				st = new StringTokenizer(f.readLine());
+			maxA = Math.max(maxA, a[i] = Integer.parseInt(st.nextToken()));
+		}
+		for(int i = 0;  i < b.length; i++)
+		{
+			if(!st.hasMoreTokens())
+				st = new StringTokenizer(f.readLine());
+			maxB = Math.max(maxB, b[i] = Integer.parseInt(st.nextToken()));
+		}
+		
 		Arrays.sort(b);
+		
+		int[] ta = getTimes(a);
+		out.print(ta[ta.length - 1] + " ");
+		int[] tb = getTimes(b);
+		int max = 0;
+		for(int i = 0; i < jobs; i++)
+			max = Math.max(max, ta[i] + tb[jobs - i - 1]);
+		out.println(max);
+		out.close();
 	}
 	
-	public static boolean check(int time)
+	public static int[] getTimes(int[] a)
 	{
-		int[] bufferA = new int[a.length];
-		int[] bufferB = new int[b.length];
-		int count = 0;
-		for(int t = 0; t < time; t++)
+		int[] result = new int[jobs];
+		int[] times = new int[a.length];
+		for(int i = 0; i < jobs; i++)
 		{
-			
+			int min = 0;
+			int bestTime = times[0] + a[0];
+			for(int j = 1; j < times.length; j++)
+			{
+				if(times[j] + a[j] < bestTime)
+				{
+					min = j;
+					bestTime = times[j] + a[j];
+				}
+			}
+			times[min] += a[min];
+			result[i] = times[min];
 		}
+		return result;
 	}
 }

@@ -73,5 +73,6 @@ public class agrinet
 		
 		out.println(prims(a));
 		out.close();
+		f.close();
 	}
 }
