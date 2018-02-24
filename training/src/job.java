@@ -31,15 +31,4 @@ public class job
 		Arrays.sort(a);
 		Arrays.sort(b);
 	}
-	
-	public static boolean check(int time)
-	{
-		int[] bufferA = new int[a.length];
-		int[] bufferB = new int[b.length];
-		int count = 0;
-		for(int t = 0; t < time; t++)
-		{
-			
-		}
-	}
 }
