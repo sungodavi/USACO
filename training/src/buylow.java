@@ -5,63 +5,65 @@ TASK: buylow
 */
 import java.util.*;
 import java.io.*;
+import java.math.BigInteger;
 
 class buylow 
 {
+	static int[] a;
 	public static void main(String[] args) throws IOException 
 	{
 		BufferedReader f = new BufferedReader(new FileReader("buylow.in"));
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("buylow.out")));
+//		BufferedReader f = new BufferedReader(new InputStreamReader(System.in));
+//		PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+		StringTokenizer st;
 		int size = Integer.parseInt(f.readLine());
-		StringTokenizer st = new StringTokenizer(f.readLine());
-		int[] a = new int[size];
-		for(int i =0; i < size; i++)
+		a = new int[size];
+		st = new StringTokenizer(f.readLine());
+		for(int i = 0; i < size; i++)
 		{
 			if(!st.hasMoreTokens())
 				st = new StringTokenizer(f.readLine());
 			a[i] = Integer.parseInt(st.nextToken());
 		}
-		LinkedList<Integer> indices = new LinkedList<Integer>();
-		indices.add(0);
-		int[] dp = new int[size];
-		int[] prev = new int[size];
-		dp[0] = 1;
-		int length = 1;
+		int[] len = new int[size];
+		BigInteger[] counts = new BigInteger[size];
+		len[0] = 1;
+		int best = 1;
 		for(int i = 1; i < size; i++)
 		{
-			int best = -1;
+			int curr = 1;
 			for(int j = 0; j < i; j++)
-			{
-				if(a[j] > a[i] && (best < 0 || dp[j] > dp[best]))
-					best = j;
-			}
-			dp[i] = best < 0 ? 1 : dp[best] + 1;
-			prev[i] = best;
-			if(dp[i] > length)
-			{
-				indices = new LinkedList<Integer>();
-				indices.add(i);
-				length = dp[i];
-			}
-			else if(best == length)
-			{
-				indices.add(i);
-			}
+				if(a[j] > a[i])
+					curr = Math.max(curr, len[j] + 1);
+			len[i] = curr;
+			if(best < len[i])
+				best = len[i];
 		}
-		for(int i = 0; i < a.length; i++)
+		counts[0] = BigInteger.ONE;
+		for(int i = 1; i < size; i++)
 		{
-			System.out.println(Arrays.toString(recreate(a, prev, i, dp[i])));
+			BigInteger curr = BigInteger.ZERO;
+			HashSet<Integer> visited = new HashSet<Integer>();
+			for(int j = i - 1; j >= 0; j--)
+			{
+				if(a[j] > a[i] && len[j] == len[i] - 1 && visited.add(a[j]))
+					curr = curr.add(counts[j]);
+			}
+			if(curr.equals(BigInteger.ZERO))
+				counts[i] = BigInteger.ONE;
+			else
+				counts[i] = curr;
 		}
-	}
-	
-	static int[] recreate(int[] a, int[] prev, int i, int size)
-	{
-		int[] result = new int[size];
-		for(int k = size - 1; k >= 0; k--)
-		{
-			result[k] = a[i];
-			i = prev[i];
-		}
-		return result;
+//		System.out.println(Arrays.toString(len));
+//		System.out.println(Arrays.toString(counts));
+		BigInteger result = BigInteger.ZERO;
+		HashSet<Integer> visited = new HashSet<Integer>();
+		for(int i = size - 1; i >= 0; i--)
+			if(len[i] == best && visited.add(a[i]))
+				result = result.add(counts[i]);
+		
+		out.printf("%d %s\n", best, result);
+		out.close();
 	}
 }

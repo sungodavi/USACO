@@ -48,8 +48,6 @@ public class job
 		out.println(max);
 		out.close();
 	}
-<<<<<<< HEAD
-=======
 	
 	public static int[] getTimes(int[] a)
 	{
@@ -72,5 +70,4 @@ public class job
 		}
 		return result;
 	}
->>>>>>> 33727e7d472d74b9413d92830916bb0f5827867f
 }
