@@ -23,14 +23,45 @@ class theme
 				st = new StringTokenizer(f.readLine());
 			notes[i] = Integer.parseInt(st.nextToken());
 		}
-		a = new int[size];
+		a = new int[size - 1];
 		for(int i = 0; i < size - 1; i++)
-			a[i] = notes[i + 1] - notes[i] + 100;
-		build();
+			a[i] = notes[i + 1] - notes[i];
+//		System.out.println(Arrays.toString(a));
+		int result = solve();
+		out.println(result >= 5 ? result : 0);
+		out.close();
+	}
+	
+	public static int solve()
+	{
+		int[] dp = new int[a.length + 1];
+		int[] prev = new int[a.length + 1];
+		int best = 0;
+		for(int r = 1; r <= a.length; r++)
+		{
+			for(int c = r + 1; c <= a.length; c++)
+			{
+				if(a[r - 1] == a[c - 1])
+				{
+					//System.out.println(r + " " + c);
+					dp[c] = prev[c - 1] + (c - r > prev[c - 1] + 1 ? 1 : 0);
+					best = Math.max(best, dp[c]);
+					//System.out.println(print(a, r) + " " + print(a, c) + " " + dp[r][c]);
+				}
+			}
+			prev = dp;
+			dp = new int[a.length + 1];
+		}
+//		for(int[] temp : dp)
+//			System.out.println(Arrays.toString(temp));
+		return best + 1;
+	}
+	
+	public static String print(int[] a, int size)
+	{
 		int[] temp = new int[size];
-		for(int i =0; i < size; i++)
-			temp[i] = i;
-		display();
+		System.arraycopy(a, 0, temp, 0, size);
+		return Arrays.toString(temp);
 	}
 	
 	public static void display()
@@ -39,7 +70,7 @@ class theme
 		{
 			int[] temp = new int[sa.length - num];
 			System.arraycopy(a, num, temp, 0, temp.length);
-			System.out.println(Arrays.toString(temp));
+//			System.out.println(Arrays.toString(temp));
 		}
 	}
 	
