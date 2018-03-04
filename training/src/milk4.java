@@ -7,6 +7,7 @@ TASK: milk4
 import java.util.*;
 import java.io.*;
 import java.awt.Point;
+import java.math.BigInteger;
 
 class milk4 
 {
@@ -122,5 +123,11 @@ class milk4
 		{
 			return v + " " + w;
 		}
+	}
+	
+	static class Pair
+	{
+		int size;
+		BigInteger mask;
 	}
 }
