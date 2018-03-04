@@ -7,7 +7,9 @@ TASK: bigbrn
 import java.util.*;
 import java.io.*;
 
-class bigbrn {
+class bigbrn 
+{
+	static int[][] a;
 	public static void main(String[] args) throws IOException {
 		BufferedReader f = new BufferedReader(new FileReader("bigbrn.in"));
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("bigbrn.out")));
@@ -15,7 +17,7 @@ class bigbrn {
 		int size = Integer.parseInt(st.nextToken()) + 1;
 		int blocks = Integer.parseInt(st.nextToken());
 		int[][] map = new int[size][size];
-		int[][] a = new int[size][size];
+		a = new int[size][size];
 		while(blocks-- > 0)
 		{
 			st = new StringTokenizer(f.readLine());
@@ -23,59 +25,55 @@ class bigbrn {
 			int c = Integer.parseInt(st.nextToken());
 			map[r][c] = 1;
 		}
-		for(int r = 0; r < size; r++)
+		for(int r = 1; r < size; r++)
 			for(int c = 1; c < size; c++)
-				a[r][c] = a[r][c - 1] + map[r][c];
-		for(int[] temp : a)
-			System.out.println(Arrays.toString(temp));
-		out.println(solve(a));
+				a[r][c] = a[r][c - 1] + a[r - 1][c] - a[r - 1][c - 1] + map[r][c];
+//		for(int[] temp : map)
+//			System.out.println(Arrays.toString(temp));
+//		System.out.println("--------------------");
+//		for(int[] temp : a)
+//			System.out.println(Arrays.toString(temp));
+		out.println(solve());
 		out.close();
 	}
 	
-	public static int solve(int[][] a)
+	public static int solve()
 	{
-		int n = a.length;
 		int result = 0;
-		for(int size = n - 1; size > result; size--)
-		{
-			for(int c = 1; c <= n - size; c++)
+		int n = a.length;
+		for(int r = 1; r < n; r++)
+			for(int c = 1; c < n; c++)
 			{
-				int count = 0;
-				for(int r = 1; r < n; r++)
-				{
-					if(a[r][c - 1] == a[r][c + size - 1])
-					{
-						count++;
-						if(count == size)
-							return size;
-						result = Math.max(result, count);
-					}
-					else
-					{
-						count = 0;
-						if(n - 1 - r < size)
-							break;
-					}
-				}
+//				System.out.println(r + " " + c + " " + search(r, c));
+				result = Math.max(result, search(r, c) + 1);
 			}
-		}
 		return result;
 	}
 	
-	public static int search(int[] a, int low)
+	public static int search(int r, int c)
 	{
-		int high = a.length - 1;
-		int val = a[low];
+		int n = a.length;
+		int low = 0;
+		int high = n - Math.max(r, c);
 		while(low <= high)
 		{
 			int mid = low + high >> 1;
-			if(a[mid] == val && (mid == a.length - 1 || a[mid + 1] != val))
+			if(getRect(r, c, mid) == 0 && (r + mid == a.length - 1 || c + mid == a.length - 1 || getRect(r, c, mid + 1) != 0))
 				return mid;
-			if(a[mid] > val)
+			else if(getRect(r, c, mid) > 0)
 				high = mid - 1;
 			else
 				low = mid + 1;
 		}
 		return -1;
+	}
+	
+	public static int getRect(int r, int c, int mid)
+	{
+		int r2 = r + mid;
+		int c2 = c + mid;
+		r--;
+		c--;
+		return a[r2][c2] - a[r][c2] - a[r2][c] + a[r][c];
 	}
 }
