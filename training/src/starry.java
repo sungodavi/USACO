@@ -56,8 +56,6 @@ public class starry
 						list.add(star);
 					}
 				}
-//		for(Cluster c : list)
-//			System.out.println(c);
 		display(out);
 		out.close();
 	}
@@ -87,18 +85,13 @@ public class starry
 	
 	public static Point getCorner(Cluster c, int index)
 	{
-		switch(index)
-		{
-		case 0: return c.tl;
-		case 1: return c.rt;
-		case 2: return c.br;
-		case 3: return c.lb;
-		case 4: return c.tr;
-		case 5: return c.lt;
-		case 6: return c.bl;
-		case 7: return c.rb;
-		}
-		return null;
+		if(index == 0 || index == 5)
+			return c.tl;
+		if(index == 1 || index == 4)
+			return c.tr;
+		if(index == 2 || index == 7)
+			return c.br;
+		return c.bl;
 	}
 	
 	public static void dfs(int x, int y, int index, Cluster c, char letter)
@@ -176,11 +169,11 @@ public class starry
 	
 	static class Cluster
 	{
-		Point tl, tr, bl, br, lt, lb, rt, rb;
+		Point tl, tr, bl, br;
 		ArrayList<Point> steps;
 		public Cluster(int r, int c)
 		{
-			tl = tr = bl = br = lt = lb = rt = rb = new Point(r, c);
+			tl = tr = bl = br = new Point(r, c);
 			steps = new ArrayList<Point>();
 		}
 		
@@ -224,19 +217,11 @@ public class starry
 				bl = new Point(r, c);
 			if(r > br.x || r == br.x && c > br.y)
 				br = new Point(r, c);
-			if(c < lt.y || c == lt.y && r < lt.x)
-				lt = new Point(r, c);
-			if(c > rt.y || c == rt.y && r < rt.x)
-				rt = new Point(r, c);
-			if(c < lb.y || c == lb.y && r > lb.x)
-				lb = new Point(r, c);
-			if(c > rb.y || c == rb.y && r > rb.x)
-				rb = new Point(r, c);
 		}
 		
 		public String toString()
 		{
-			return String.format("%s %s %s %s\n%s %s %s %s\n%s", tl, tr, bl, br, lt, rt, lb, rb, steps);
+			return String.format("%s %s %s %s\n%s", tl, tr, bl, br, steps);
 		}
 	}
 }
