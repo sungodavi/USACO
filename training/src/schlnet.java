@@ -9,109 +9,111 @@ import java.io.*;
 
 public class schlnet
 {
-	static int[] scc;
-	static int count;
-	static boolean[] visited, child;
-	static Stack<Integer> st;
-	static LinkedList<Integer>[] list, reverse;
+	static int[][] a;
+	static boolean[] visited;
 	public static void main(String[] args) throws IOException
 	{
-		long start = System.currentTimeMillis();
 		BufferedReader f = new BufferedReader(new FileReader("schlnet.in"));
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("schlnet.out")));
 		StringTokenizer st;
 		int size = Integer.parseInt(f.readLine());
-		list = new LinkedList[size];
-		reverse = new LinkedList[size];
-		for(int i = 0; i < size; i++)
-		{
-			list[i] = new LinkedList<Integer>();
-			reverse[i] = new LinkedList<Integer>();
-		}
-		for(int i = 0; i < size; i++)
+		a = new int[size][size];
+		for(int r = 0; r < size; r++)
 		{
 			st = new StringTokenizer(f.readLine());
-			for(int j = Integer.parseInt(st.nextToken()); j != 0; j = Integer.parseInt(st.nextToken()))
-			{
-				j--;
-				list[i].add(j);
-				reverse[j].add(i);
-			}
+			for(int c = Integer.parseInt(st.nextToken()); c > 0; c = Integer.parseInt(st.nextToken()))
+				a[r][c - 1] = 1;
 		}
-		scc();
-		System.out.println(Arrays.toString(scc));
-		int top = count(reverse);
-		int bottom = count(list);
+		int top = tops();
+		int bottom = bottoms();
+//		System.out.println(top + " " + bottom);
 		out.println(top);
-		out.println(a - 2 + count);
+		if(isConnected())
+			out.println(0);
+		else
+			out.println(Math.max(top, bottom));
 		out.close();
-		System.out.println(System.currentTimeMillis() - start);
 		System.exit(0);
 	}
 	
-	public static void scc()
+	public static boolean isConnected()
 	{
-		visited = new boolean[list.length];
-		scc = new int[list.length];
-		st = new Stack<Integer>();
-		count = 0;
-		for(int i = 0; i < list.length; i++)
-			if(!visited[i])
-				dfs(i);
-		Arrays.fill(scc, -1);
-		visited = new boolean[list.length];
-		while(!st.isEmpty())
+		for(int i = 0; i < a.length; i++)
 		{
-			int u = st.pop();
-			if(!visited[u])
-				assign(u, count++);
+			boolean[] flags = new boolean[a.length];
+			visited = new boolean[a.length];
+			fill(i, flags);
+			for(boolean b : visited)
+				if(!b)
+					return false;
+		}
+		return true;
+	}
+	
+	public static int tops()
+	{
+		boolean[] top = new boolean[a.length];
+		Arrays.fill(top, true);
+		for(int i = 0; i < a.length; i++)
+			if(top[i])
+			{
+				visited = new boolean[a.length];
+				fill(i, top);
+				top[i] = true;
+			}
+		return count(top);
+	}
+	
+	public static int bottoms()
+	{
+		boolean[] bottom = new boolean[a.length];
+		Arrays.fill(bottom, true);
+		for(int i = 0; i < a.length; i++)
+			if(bottom[i])
+			{
+				visited = new boolean[a.length];
+				fillReverse(i, bottom);
+				bottom[i] = true;
+			}
+		return count(bottom);
+	}
+	
+	public static void fill(int r, boolean[] flags)
+	{
+		if(visited[r])
+			return;
+		visited[r] = true;
+		flags[r] = false;
+		for(int c = 0; c < a.length; c++)
+		{
+			if(a[r][c] > 0)
+			{
+				if(!visited[c])
+					fill(c, flags);
+			}
 		}
 	}
 	
-	public static int count(LinkedList<Integer>[] list)
+	public static void fillReverse(int c, boolean[] flags)
+	{
+		if(visited[c])
+			return;
+		visited[c] = true;
+		flags[c] = false;
+		for(int r = 0; r < a.length; r++)
+			if(a[r][c] > 0)
+			{
+				if(!visited[r])
+					fillReverse(r, flags);
+			}
+	}
+	
+	public static int count(boolean[] a)
 	{
 		int result = 0;
-		visited = new boolean[list.length];
-		child = new boolean[count];
-		for(int i = 0; i < visited.length; i++)
-			if(!visited[i])
-				root(i, list);
-		for(boolean b : child)
-			if(!b)
+		for(boolean b : a)
+			if(b)
 				result++;
 		return result;
-	}
-	
-	public static void root(int u, LinkedList<Integer>[] list)
-	{
-		if(visited[u])
-			return;
-		visited[u] = true;
-		for(int v : list[u])
-		{
-			if(scc[v] != scc[u])
-				child[scc[u]] = true;
-			dfs(v);
-		}
-	}
-	
-	public static void dfs(int u)
-	{
-		if(visited[u])
-			return;
-		visited[u] = true;
-		for(int v : list[u])
-			dfs(v);
-		st.push(u);
-	}
-	
-	public static void assign(int u, int root)
-	{
-		if(visited[u])
-			return;
-		visited[u] = true;
-		scc[u] = root;
-		for(int v : reverse[u])
-			assign(v, root);
 	}
 }
