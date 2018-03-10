@@ -10,10 +10,9 @@ import java.awt.Point;
 
 class milk4 
 {
-	static int[][] dp, first;
-	static Point[][] next;
+	static int[][] dp, prev, used;
 	static int[] a;
-	static int INF = 101;
+	static int INF = (int)200;
 	public static void main(String[] args) throws IOException 
 	{
 		long start = System.currentTimeMillis();
@@ -25,65 +24,100 @@ class milk4
 		for(int i = 1; i < size; i++)
 			a[i] = Integer.parseInt(f.readLine());
 		Arrays.sort(a);
-//		System.out.println(Arrays.toString(a));
-		dp = new int[num + 1][size];
-		first = new int[num + 1][size];
-		next = new Point[num + 1][size];
-		for(int[] temp : dp)
-			Arrays.fill(temp, -1);
-		first = new int[num + 1][size];
-		out.print(dfs(num, 0));
-		display(out);
+		solve(num);
+		rebuild(out);
 		System.out.println(System.currentTimeMillis() - start);
 		out.close();
 	}
 	
-	public static void display(PrintWriter out)
+	public static void rebuild(PrintWriter out)
 	{
-		int coin = 0;
-		int u = dp.length - 1;
-		int curr = 0;
-		while(u > 0)
+		int curr = dp[0].length - 1;
+		int r = dp.length - 1;
+		int size = dp[r][curr];
+		out.print(size);
+		for(int i = 0; i < size; i++)
 		{
-			if(curr != coin)
-				out.print(" " + a[coin = curr]);
-			Point p = next[u][curr];
-			u = p.x;
-			curr = p.y;
+			out.print(" " + prev[r][curr]);
+			curr -= prev[r][curr] * used[r][curr];
 		}
-		if(coin != curr)
-			out.print(" " + a[curr]);
 		out.println();
 	}
 	
-	public static int dfs(int u, int curr)
+	public static int solve(int num)
 	{
-		if(u == 0)
-			return 0;
-		if(dp[u][curr] != -1)
-			return dp[u][curr];
-		int result = INF;
-		Point best = null;
-		for(int i = Math.max(1, curr); i < a.length; i++)
+		dp = new int[a.length][num + 1];
+		used = new int[a.length][num + 1];
+		prev = new int[a.length][num + 1];
+		for(int c = 0; c < dp[0].length; c++)
 		{
-			if(a[i] > u)
-				break;
-			int v = u - a[i];
-			int p = dfs(v, i);
-			if(i != curr)
+			dp[0][c] = INF;
+			prev[0][c] = -1;
+			used[0][c] = -1;
+		}
+		dp[0][0] = 0;
+		//reverse a
+		for(int i = 1; i <= a.length / 2; i++)
+		{
+			int temp = a[i];
+			a[i] = a[a.length - i];
+			a[a.length - i] = temp;
+		}
+		for(int r = 1; r < dp.length; r++)
+		{
+			System.arraycopy(dp[r - 1], 0, dp[r], 0, dp[0].length);
+			System.arraycopy(prev[r - 1], 0, prev[r], 0, prev[0].length);
+			System.arraycopy(used[r - 1], 0, used[r], 0, used[0].length);
+			for(int c = a[r]; c < dp[0].length; c++)
 			{
-				p++;
-				first[v][i] = i;
+				int u = c - a[r];
+				if(dp[r][u] < INF)
+				{
+					if(prev[r][u] == a[r])
+					{
+						dp[r][c] = dp[r][u];
+						used[r][c] = used[r][u] + 1;
+						prev[r][c] = a[r];
+					}
+					else
+					{
+						dp[r][c] = dp[r][u] + 1;
+						used[r][c] = 1;
+						prev[r][c] = a[r];
+					}
+					
+					if(dp[r - 1][u] + 1 < dp[r][c] || (dp[r - 1][u] + 1 == dp[r][c] && check(r - 1, u, c - used[r][c] * a[r])))
+					{
+						dp[r][c] = dp[r - 1][u] + 1;
+						used[r][c] = 1;
+						prev[r][c] = a[r];
+					}
+				}
 			}
-			if(p < 101 && (best == null || p < result || p == result && first[v][i] < first[best.x][best.y]))
+			for(int c = 0; c < dp[0].length; c++)
 			{
-				best = new Point(v, i);
-				result = p;
-				first[u][curr] = i;
+				if(dp[r][c] > dp[r - 1][c])
+				{
+					dp[r][c] = dp[r - 1][c];
+					used[r][c] = used[r - 1][c];
+					prev[r][c] = prev[r - 1][c];
+				}
 			}
 		}
-//		System.out.println(u + " " + curr + " " + result + " " + first[u][curr] + " " + best);
-		next[u][curr] = best;
-		return dp[u][curr] = result;
+		return dp[a.length - 1][num];
+	}
+	
+	public static boolean check(int r, int a, int b)
+	{
+		while(a > 0 && b > 0)
+		{
+			if(prev[r][a] < prev[r][b])
+				return true;
+			if(prev[r][b] < prev[r][a])
+				return false;
+			a -= used[r][a] * prev[r][a];
+			b -= used[r][b] * prev[r][b];
+		}
+		return a == 0;
 	}
 }
