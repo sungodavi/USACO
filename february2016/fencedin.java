@@ -1,85 +1,87 @@
+/*
+ID: sungoda1
+LANG: JAVA
+TASK: fencedin
+*/
+
 import java.util.*;
 import java.io.*;
 
-public class fencedin 
-{
-	public static int[] dx = {1, -1, 0, 0};
-	public static int[] dy = {0, 0, 1, -1};
-	public static void main(String[] args) throws IOException 
-	{
+class fencedin {
+	public static void main(String[] args) throws IOException {
 		BufferedReader f = new BufferedReader(new FileReader("fencedin.in"));
-		PrintWriter out = new PrintWriter(new FileWriter("fencedin.out"));
+		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("fencedin.out")));
 		StringTokenizer st = new StringTokenizer(f.readLine());
-		
 		int rows = Integer.parseInt(st.nextToken());
 		int cols = Integer.parseInt(st.nextToken());
-		int n = Integer.parseInt(st.nextToken());
-		int m = Integer.parseInt(st.nextToken());
+		long[] v = new long[Integer.parseInt(st.nextToken()) + 1];
+		long[] h = new long[Integer.parseInt(st.nextToken()) + 1];
 		
-		boolean[][] visited = new boolean[m + 1][n + 1];
-		int[] vLines = new int[n + 2];
-		int[] hLines = new int[m + 2];
-		for(int i = 1; i <= n; i++)
-			vLines[i] = Integer.parseInt(f.readLine());
-		vLines[n + 1] = rows;
-		for(int i = 1; i <= m; i++)
-			hLines[i] = Integer.parseInt(f.readLine());
-		hLines[m + 1] = cols;
-		Arrays.sort(vLines); Arrays.sort(hLines);
-		
-		Queue<Point> q = new PriorityQueue<Point>();
-		long result = 0;
-		q.add(new Point(0, 0, 0));
-		while(!q.isEmpty())
+		int[] temp = new int[v.length - 1];
+		for(int i = 0; i < temp.length; i++)
+			temp[i] = Integer.parseInt(f.readLine());
+		Arrays.sort(temp);
+		int prev = 0;
+		for(int i = 0; i < temp.length; i++)
 		{
-			Point p = q.poll();
-			if(visited[p.x][p.y])
-				continue;
-			//System.out.println(p);
-			visited[p.x][p.y] = true;
-			result += p.d;
-			for(int i = 0; i < dx.length; i++)
+			v[i] = temp[i] - prev;
+			prev = temp[i];
+		}
+		v[v.length - 1] = rows - prev;
+		Arrays.sort(v);
+		temp = new int[h.length - 1];
+		for(int i = 0; i < temp.length; i++)
+			temp[i] = Integer.parseInt(f.readLine());
+		Arrays.sort(temp);
+		prev = 0;
+		for(int i = 0; i < temp.length; i++)
+		{
+			h[i] = temp[i] - prev;
+			prev = temp[i];
+		}
+		h[h.length - 1] = cols - prev;
+		Arrays.sort(h);
+		f.close();
+//		System.out.println(Arrays.toString(h));
+//		System.out.println(Arrays.toString(v));
+		long result = h[0] * (v.length - 1) + v[0] * (h.length - 1);
+		int i1 = 1, i2 = 1;
+		while(i1 < h.length && i2 < v.length)
+		{
+			if(h[i1] < v[i2])
 			{
-				int r = p.x + dx[i];
-				int c = p.y + dy[i];
-				if(r < 0 || c < 0 || r >= visited.length || c >= visited[0].length || visited[r][c])
-					continue;
-				//System.out.println(r + " " + c);
-				int d;
-				if(p.x == r)
-				{
-					d = hLines[r + 1] - hLines[r];
-				}
-				else
-				{
-					d = vLines[c + 1] - vLines[c];
-				}
-				//System.out.println(p + " " + r + " " + c + " " + d);
-				q.add(new Point(r, c, d));
+				result += h[i1++] * (v.length - i2);
+			}
+			else
+			{
+				result += v[i2++] * (h.length - i1);
 			}
 		}
 		out.println(result);
 		out.close();
 	}
 	
-	static class Point implements Comparable<Point>
+	static class Wall implements Comparable<Wall>
 	{
-		int x, y, d;
-		public Point(int x, int y, int d)
+		int w;
+		boolean flag; //true = vertical
+		public Wall(int w, boolean flag)
 		{
-			this.x = x;
-			this.y = y;
-			this.d = d;
+			this.w = w;
+			this.flag = flag;
 		}
 		
-		public int compareTo(Point p)
+		public int compareTo(Wall wall)
 		{
-			return d - p.d;
-		}
-		
-		public String toString()
-		{
-			return x + " " + y + " " + d;
+			if(w == wall.w)
+			{
+				if(flag == wall.flag)
+					return 0;
+				if(flag)
+					return 1;
+				return -1;
+			}
+			return w - wall.w;
 		}
 	}
 }

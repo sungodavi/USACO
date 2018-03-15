@@ -36,6 +36,9 @@ class slingshot
 		}
 		f.close();
 		Collections.sort(y);
+		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for(int i = 0; i < y.size(); i++)
+			map.put(y.get(i), i);
 		int limit = y.get(y.size() - 1);
 		Arrays.sort(a);
 		Arrays.sort(q);
@@ -51,8 +54,8 @@ class slingshot
 			int e = q[i].b;
 			while(index < a.length && a[index].x <= s)
 			{
-				front.update(a[index].y, a[index].t - a[index].x - a[index].y);
-				outer.update(a[index].y, a[index].t - a[index].x + a[index].y);
+				front.update(map.get(a[index].y), a[index].t - a[index].x - a[index].y);
+				outer.update(map.get(a[index].y), a[index].t - a[index].x + a[index].y);
 				index++;
 			}
 			result[i] = min(result[i], s + e + front.query(0, e), s - e + outer.query(e, limit));
@@ -65,8 +68,8 @@ class slingshot
 			int e = q[i].b;
 			while(index >= 0 && a[index].x >= s)
 			{
-				inner.update(a[index].y, a[index].t + a[index].x - a[index].y);
-				last.update(a[index].y, a[index].t + a[index].x + a[index].y);
+				inner.update(map.get(a[index].y), a[index].t + a[index].x - a[index].y);
+				last.update(map.get(a[index].y), a[index].t + a[index].x + a[index].y);
 				index--;
 			}
 			result[i] = min(result[i], e - s + inner.query(0, e), last.query(e, limit) - s - e);
@@ -124,53 +127,37 @@ class slingshot
 	static class SegTree
 	{
 		long[] a;
-		int qs, qe;
+		int qs, qe, n;
 		public SegTree()
 		{
-			int n = y.size();
-			a = new long[4 * n];
+			n = y.size();
+			a = new long[2 * n + 2];
 			Arrays.fill(a, INF);
 		}
 		
 		public void update(int pos, int val)
 		{
-			update(0, y.size() - 1, 1, pos, val);
-		}
-		
-		public void update(int s, int e, int index, int pos, int val)
-		{
-			if(pos < y.get(s) || pos > y.get(e))
-				return;
-			a[index] = Math.min(a[index], val);
-			if(s != e)
-			{
-				int mid = s + e >> 1;
-				update(s, mid, 2 * index, pos, val);
-				update(mid + 1, e, 2 * index + 1, pos, val);
-			}
+			for(pos += n; pos > 0; pos >>= 1)
+				a[pos] = Math.min(a[pos], val);
 		}
 		
 		public long query(int s, int e)
 		{
+			long result = INF;
 			if(s > e)
 				return INF;
-			qs = s;
-			qe = e;
-			return query(0, y.size() - 1, 1);
-		}
-		
-		public long query(int s, int e, int i)
-		{
-//			System.out.println(s + " " + e + " " + i);
-//			System.out.printf("%d %d %d %d\n", qs, qe, y.get(s), y.get(e));
-			if(qe < y.get(s) || s > y.get(e) || s > e)
-				return INF;
-			if(y.get(s) >= qs && y.get(e) <= qe)
-				return a[i];
-			if(s == e)
-				return INF;
-			int mid = s + e >> 1;
-			return Math.min(query(s, mid, 2 * i), query(mid + 1, e, 2 * i + 1));
+			s = search(s, true);
+			e = search(e, false);
+			if(s > e || s >= n || e < 0)
+				return result;
+			for(s += n, e += n + 1; s < e; s >>= 1, e >>= 1)
+			{
+				if(s % 2 != 0)
+					result = Math.min(result, a[s++]);
+				if(e % 2 != 0)
+					result = Math.min(result, a[--e]);
+			}
+			return result;
 		}
 		
 		public String toString()
